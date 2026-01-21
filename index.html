@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BLACKSIGHT Crosshair</title>
+
+  <style>
+    :root{
+      --color:#000000;
+      --accent:#22c55e;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:#000;
+      color:#fff;
+      font-family:system-ui,sans-serif;
+    }
+
+    /* ===== LOADING ===== */
+    #loading{
+      position:fixed;inset:0;
+      display:flex;align-items:center;justify-content:center;
+      background:#000;z-index:9999;
+    }
+    .spinner{
+      width:48px;height:48px;
+      border:4px solid #111;
+      border-top:4px solid var(--accent);
+      border-radius:50%;
+      animation:spin 1s linear infinite;
+      margin-bottom:12px;
+    }
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* ===== LOGIN ===== */
+    #login{
+      position:fixed;inset:0;
+      display:none;align-items:center;justify-content:center;
+      background:#000;z-index:9000;
+    }
+    .login-box{
+      background:#050505;border:1px solid #222;
+      border-radius:18px;padding:32px;width:320px;text-align:center;
+    }
+    .login-box input{
+      width:100%;margin-top:10px;padding:10px;
+      border-radius:10px;border:none;background:#111;color:#fff;
+    }
+    .login-box button{
+      margin-top:16px;width:100%;padding:12px;
+      border-radius:14px;border:none;
+      background:#22c55e;font-weight:900;cursor:pointer;
+    }
+
+    /* ===== HOME ===== */
+    #home{
+      position:fixed;inset:0;
+      display:none;align-items:center;justify-content:center;
+    }
+    .home-box{
+      background:linear-gradient(180deg,#0b0b0b,#020202);
+      border:1px solid #1f2937;
+      border-radius:20px;
+      padding:40px;text-align:center;
+    }
+    .home-box button{
+      margin-top:20px;
+      background:#22c55e;border:none;
+      padding:14px 26px;border-radius:16px;
+      font-weight:900;cursor:pointer;
+    }
+
+    /* ===== APP ===== */
+    #app{display:none}
+    .top{
+      height:56px;display:flex;align-items:center;justify-content:space-between;
+      padding:0 20px;background:#050505;border-bottom:1px solid #111;
+    }
+    .top button{
+      background:#0b0b0b;border:1px solid #1f2937;
+      color:#fff;padding:8px 14px;border-radius:10px;
+      font-weight:800;cursor:pointer;
+    }
+
+    .panel{
+      width:300px;position:fixed;left:16px;top:72px;bottom:16px;
+      background:#0b0b0b;border-radius:18px;padding:16px;
+      overflow:auto;display:none;
+    }
+    .panel.show{display:block}
+    label{font-size:12px;display:block;margin-top:10px;color:#cbd5f5}
+    input{width:100%}
+
+    /* ===== CROSSHAIR ===== */
+    #overlay{position:fixed;inset:0;pointer-events:none}
+    #crosshair{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)}
+    .bar{position:absolute;background:var(--color)}
+    .circle{position:absolute;border:2px solid var(--color);border-radius:50%}
+    .dot{position:absolute;background:var(--color);border-radius:50%}
+  </style>
+</head>
+
+<body>
+
+<!-- LOADING -->
+<div id="loading">
+  <div style="text-align:center">
+    <div class="spinner"></div>
+    Loading BLACKSIGHT...
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div id="login">
+  <div class="login-box">
+    <h2>BLACKSIGHT</h2>
+    <input id="loginId" placeholder="아이디">
+    <input id="loginPw" type="password" placeholder="비밀번호">
+    <button id="loginBtn">로그인</button>
+    <p style="font-size:11px;color:#6b7280">로컬 로그인 (서버 없음)</p>
+  </div>
+</div>
+
+<!-- HOME -->
+<div id="home">
+  <div class="home-box">
+    <h1>BLACKSIGHT</h1>
+    <p>초정밀 크로스헤어 커스터마이저</p>
+    <button id="startBtn">시작하기</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="top">
+    <b>BLACKSIGHT</b>
+    <button id="openPanel">설정</button>
+  </div>
+
+  <div class="panel" id="panel">
+    <label><input type="checkbox" id="barOn" checked> 바 활성화</label>
+    <label>색상 <input type="color" id="color" value="#000000"></label>
+    <label>간격 <input type="range" id="gap" min="0" max="20" value="6"></label>
+    <label>길이 <input type="range" id="len" min="5" max="50" value="20"></label>
+    <label>두께 <input type="range" id="thick" min="1" max="10" value="2"></label>
+    <label><input type="checkbox" id="circleOn"> 원</label>
+    <label><input type="checkbox" id="dotOn"> 점</label>
+  </div>
+</div>
+
+<div id="overlay">
+  <div id="crosshair">
+    <div class="bar" id="up"></div>
+    <div class="bar" id="down"></div>
+    <div class="bar" id="left"></div>
+    <div class="bar" id="right"></div>
+    <div class="circle" id="circle"></div>
+    <div class="dot" id="dot"></div>
+  </div>
+</div>
+
+<script>
+const q=id=>document.getElementById(id);
+
+setTimeout(()=>{
+  q('loading').style.display='none';
+  q(localStorage.bs?'home':'login').style.display='flex';
+},1000);
+
+q('loginBtn').onclick=()=>{
+  localStorage.bs=1;
+  q('login').style.display='none';
+  q('home').style.display='flex';
+};
+
+q('startBtn').onclick=()=>{
+  q('home').style.display='none';
+  q('app').style.display='block';
+};
+
+q('openPanel').onclick=()=>q('panel').classList.toggle('show');
+
+const bars={up:q('up'),down:q('down'),left:q('left'),right:q('right')};
+const circle=q('circle'), dot=q('dot');
+
+function update(){
+  document.documentElement.style.setProperty('--color', q('color').value);
+  const l=+q('len').value,g=+q('gap').value,t=+q('thick').value;
+  Object.values(bars).forEach(b=>b.style.display=q('barOn').checked?'block':'none');
+  bars.up.style.cssText=`width:${t}px;height:${l}px;top:${-(g+l)}px`;
+  bars.down.style.cssText=`width:${t}px;height:${l}px;top:${g}px`;
+  bars.left.style.cssText=`height:${t}px;width:${l}px;left:${-(g+l)}px`;
+  bars.right.style.cssText=`height:${t}px;width:${l}px;left:${g}px`;
+  circle.style.display=q('circleOn').checked?'block':'none';
+  dot.style.display=q('dotOn').checked?'block':'none';
+}
+document.querySelectorAll('input').forEach(i=>i.oninput=update);
+update();
+</script>
+
+</body>
+</html>
